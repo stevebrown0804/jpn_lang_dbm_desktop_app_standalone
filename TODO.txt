@@ -43,13 +43,12 @@ REMINDERS:
 
 --current TODOs------------------------------------------------------------------------------------
 
-    TODO: Create a branch; incorporate the lindera-wasm WASM module, removing the backend-calling code with code that calls that WASM module.  
-        * Maybe make a new repo with -standalone in its name or something, rather than a branch.  We might want this code....although I don't think it would be hard to change back, when the day comes that we have the back-end to this app hosted by the TPS server.
-
     TODO: Have the "generate word count" button on UI#1 also generate kanji counts; store that kanji count ~and~ the cleartext input in the DB
         * I don't really think we need the hash at this point....but we can delete it ~after~ we're sure we're not going to use it anywhere.
         * We'll need to add some more rows in the DB (in some table or another) to hold the kanji count and the input
         * btw I'm not entirely sure we'll do anything with the input.....but atm we're just piling up the data in the DB, apparently.  We can trim it down later. *shrug*
+    
+    TODO: Resolve the exception that happens when you create a TI+SD, create a new tag and attach it to that TI+SD, delete the TI+SD then delete the tag.
 
     
 
