@@ -2,7 +2,7 @@
 
 using System;
 using System.Globalization;
-using System.Net.Http;
+using System.IO;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
@@ -66,8 +66,7 @@ public class BoolToFontWeightConverter : IValueConverter
 
 public partial class MainWindow : Window
 {
-    private const string BackendBaseUrl = "http://127.0.0.1:50000";
-    private static readonly HttpClient _http = new HttpClient();
+    private readonly LinderaWasmHost _linderaWasm;
     private int? _importRightPaneExpandedWidthPx;
     private int? _UI2RightPaneExpandedWidthPx;
     private bool _UI2RightPaneIsCollapsed;
@@ -84,11 +83,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        var wasmPath = Path.Combine(AppContext.BaseDirectory, "WASM", "lindera_wasm.wasm");
+        _linderaWasm = new LinderaWasmHost(wasmPath);
+
         _notificationManager = new Avalonia.Controls.Notifications.WindowNotificationManager(this)
-    {
-        Position = Avalonia.Controls.Notifications.NotificationPosition.BottomRight,
-        MaxItems = 3  // <--?  this seems kinda arbitrary.  NOTE TO SELF: Evaluate this, at some point.
-    };
+        {
+            Position = Avalonia.Controls.Notifications.NotificationPosition.BottomRight,
+            MaxItems = 3  // <--?  this seems kinda arbitrary.  NOTE TO SELF: Evaluate this, at some point.
+        };
 
         if (TemplateKeyValueRowsItemsControl == null)
             throw new InvalidOperationException("TemplateKeyValueRowsItemsControl not found. Check the XAML x:Name.");

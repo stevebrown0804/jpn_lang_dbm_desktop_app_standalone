@@ -2,12 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Microsoft.Data.Sqlite;
@@ -18,7 +16,7 @@ namespace jpn_lang_dbm_desktop_app;
 
 public partial class MainWindow : Window
 {
-    private async void SubmitButton_OnClick(object? sender, RoutedEventArgs e)
+    private void SubmitButton_OnClick(object? sender, RoutedEventArgs e)
     {
         SubmitButton.IsEnabled = false;
 
@@ -33,7 +31,8 @@ public partial class MainWindow : Window
             }
 
             var dict = "ipadic";
-            var parseContextJson = await GetParseContextJson();
+            var parseContextJson = _linderaWasm.GetParseContextJson();
+
             var payload = new
             {
                 text = input,
@@ -41,22 +40,7 @@ public partial class MainWindow : Window
             };
 
             var json = JsonSerializer.Serialize(payload);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            using var resp = await _http.PostAsync(
-                BackendBaseUrl + "/lindera-parse",
-                content
-            );
-
-            var body = await resp.Content.ReadAsStringAsync();
-
-            if (!resp.IsSuccessStatusCode)
-            {
-                ResultsTextBox.Text =
-                    "HTTP " + (int)resp.StatusCode + " " + resp.ReasonPhrase + "\n\n" +
-                    body;
-                return;
-            }
+            var body = _linderaWasm.LinderaParseJson(json);
 
             var wordCounts = WordCountBuilder.Build(App.Db.Connection, body);
             SaveToDatabase(input, dict, body, parseContextJson, wordCounts);
@@ -201,21 +185,6 @@ public partial class MainWindow : Window
         }
 
         tx.Commit();
-    }
-
-    private static async Task<string> GetParseContextJson()
-    {
-        using var resp = await _http.GetAsync(BackendBaseUrl + "/parse-context");
-        var body = await resp.Content.ReadAsStringAsync();
-
-        if (!resp.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException(
-                "HTTP " + (int)resp.StatusCode + " " + resp.ReasonPhrase + "\n\n" + body
-            );
-        }
-
-        return body;
     }
 
     private static string ComputeSha256Hex(string text)
