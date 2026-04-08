@@ -2,7 +2,7 @@
 
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="jpn_lang_dbm_desktop_app.AttachTagsSidebar">
+             x:Class="jpn_lang_dbm_desktop_app_standalone.AttachTagsSidebar">
   <Grid RowDefinitions="Auto,Auto,Auto,*,5,*"
         RowSpacing="8"
         Margin="8">

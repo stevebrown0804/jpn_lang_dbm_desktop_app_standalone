@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Json;
 
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 internal enum WordFormPreference
 {

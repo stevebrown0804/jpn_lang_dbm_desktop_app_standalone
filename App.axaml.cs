@@ -4,7 +4,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public partial class App : Application
 {

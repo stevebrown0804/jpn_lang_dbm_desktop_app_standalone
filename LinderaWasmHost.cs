@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using Wasmtime;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public sealed class LinderaWasmHost : IDisposable
 {

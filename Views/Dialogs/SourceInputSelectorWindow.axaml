@@ -2,7 +2,7 @@
 
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="jpn_lang_dbm_desktop_app.SourceInputSelectorWindow"
+        x:Class="jpn_lang_dbm_desktop_app_standalone.SourceInputSelectorWindow"
         Width="520"
         Height="380"
         Title="Choose source"

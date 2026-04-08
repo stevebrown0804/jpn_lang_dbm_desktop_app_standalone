@@ -4,7 +4,7 @@ using System;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public partial class MainWindow : Window
 {

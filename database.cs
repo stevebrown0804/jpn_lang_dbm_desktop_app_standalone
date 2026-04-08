@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using Microsoft.Data.Sqlite;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public sealed class Database : IDisposable
 {

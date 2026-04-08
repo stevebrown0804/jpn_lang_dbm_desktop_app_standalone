@@ -7,7 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public sealed class SourceDataBlockGridRow
 {

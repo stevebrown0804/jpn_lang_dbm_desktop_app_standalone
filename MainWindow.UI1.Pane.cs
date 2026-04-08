@@ -12,7 +12,7 @@ using Microsoft.Data.Sqlite;
 using System.Security.Cryptography;
 
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public partial class MainWindow : Window
 {

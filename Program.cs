@@ -3,7 +3,7 @@
 using Avalonia;
 using System;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 class Program
 {

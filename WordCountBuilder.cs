@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public static class WordCountBuilder
 {

@@ -3,10 +3,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
-        xmlns:local="clr-namespace:jpn_lang_dbm_desktop_app"
+        xmlns:local="clr-namespace:jpn_lang_dbm_desktop_app_standalone"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="jpn_lang_dbm_desktop_app.MainWindow"
-        Title="jpn_lang_dbm_desktop_app">
+        x:Class="jpn_lang_dbm_desktop_app_standalone.MainWindow"
+        Title="jpn_lang_dbm_desktop_app_standalone">
   <Window.Resources>
     <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
     <local:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter"/>

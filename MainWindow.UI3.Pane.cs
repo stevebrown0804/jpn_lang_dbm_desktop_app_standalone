@@ -6,7 +6,7 @@ using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 
 public class TagDisplayPart

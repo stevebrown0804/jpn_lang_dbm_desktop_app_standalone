@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Microsoft.Data.Sqlite;
 
-namespace jpn_lang_dbm_desktop_app;
+namespace jpn_lang_dbm_desktop_app_standalone;
 
 public partial class AttachTagsSidebar : UserControl
 {
