@@ -1,0 +1,6 @@
+/bin
+/obj
+/.vscode
+
+*.code-workspace
+*.sqlite3

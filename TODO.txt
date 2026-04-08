@@ -1,0 +1,380 @@
+REMINDERS: 
+    * Source data is purely informational; we're using timestamps to disambiguate input/'source data' pairs.
+
+    *Summary string generation
+        Timestamped input (UI #1 sidebar): MainWindow.UI2.Pane.cs - ReadSourceMetadataDropdownItems()
+        Timestamped input (preview of currently-selected input): MainWindow.UI2.Pane.cs - ApplySelectedSourcePreviewTextOrThrow()
+        Source data (stash list): MainWindow.UI2.Pane.cs - BuildSourceDataSummary()
+        TI+SD (UI#2 sidebar): MainWindow.UI2.Sidebar.cs - PopulateTimestampedInputSourceDataSidebar
+
+    *Thoughts about tags:
+        * We'll trim whitespace around tags, but other than that I don't really feel the need to force capitalization or forbid punctuation or anything like that.
+        * We'll want to include a "this tag is attached to # TI+SD bundles" count somewhere
+
+    * Avalonia notes:
+        *Default text in Avalonia TextBox control is called a "watermark;" it's displayed when the Text field is empty ("", possibly NULL or "never set")
+        * ItemsControl -> for listing items (with no support for selection)
+        * ListBox -> for selecting items by arbitrary ctrl/shift-click selection
+
+    *"Dual list selection UI" - when we have a LHS list, a >> and << button, and a RHS list that's constructed from elements from the LHS list (by selecting items in the LHS and either clicking the >> button or click/drag'ing them)
+
+
+
+--'growing need (but still small enough to ignore...~for the time being~ =o )' TODOs----------------------------
+
+    TODO (AT SOME POINT): Let do a couple things:
+        * Let's make sure that the code that's in each of the .UI[1/2].[Pane/Sidebar].cs files actually belongs to that specific UI
+        * Let's avoid using "UI1" and "UI2" in code, when there's a "semi-short but far more descriptive" alternative.  
+            * We'll determine what exactly we mean by that, eventually.
+        *RELATED TODO: Refactor to separate:
+            * ...code that multiple sidebars/panes use into MainWindow
+            * (MAYBE) ...code that both the sidebar and pane display into a file specific to that UI (but not sidebar or pane)
+            * ...code that a specific (UI #, sidebar/pain) displays into that .UI#.[sidebar/pane].cs file
+
+    TODO: Answer the question, "Should we separate 'generate word counts' and 'generate kanji counts?'🤔
+        * I'm not sure atm if we can just take a word count and extract the kanji from it or what.  
+            * And, more to the point, if that "list of kanji we take from the word count" will still be useful.
+            * Let's try to remember to think about this, at some point.
+            * A couple thoughts on the matter: 
+                * We don't need Lindera to count kanji in a block of text.  (Just make a dict with key='each new kanji that you see' and value='tally of appearances of that kanji') (...or maybe a dict of "every kanji in the text, with value initialized to 0" then do a 2nd pass where you tally the ones that you see.  that's probably quicker that checking for the existence of keys, each time.)
+                * We could have the app be set to either "Count words" mode or "count kanji" mode.
+
+
+
+--current TODOs------------------------------------------------------------------------------------
+
+    TODO: Create a branch; incorporate the lindera-wasm WASM module, removing the backend-calling code with code that calls that WASM module.  
+        * Maybe make a new repo with -standalone in its name or something, rather than a branch.  We might want this code....although I don't think it would be hard to change back, when the day comes that we have the back-end to this app hosted by the TPS server.
+
+    TODO: Have the "generate word count" button on UI#1 also generate kanji counts; store that kanji count ~and~ the cleartext input in the DB
+        * I don't really think we need the hash at this point....but we can delete it ~after~ we're sure we're not going to use it anywhere.
+        * We'll need to add some more rows in the DB (in some table or another) to hold the kanji count and the input
+        * btw I'm not entirely sure we'll do anything with the input.....but atm we're just piling up the data in the DB, apparently.  We can trim it down later. *shrug*
+
+    
+
+
+--polishing the word count results-----------------------------------------------------------------
+
+    TODO: Ignore "U+FE0E, VARIATION SELECTOR-15"
+        sub-TODO: Answer the question, "Are there other "variation selector" characters that we also need to ignore?"  And do we need to add a setting to the DB for these class of character, or is it something we can either always ignore or that's included by another setting?
+
+    TODO: Create a UI for the user_submitted_dictionary_entries table
+        * List the existing entries
+        * Allow a new entry to be added
+        * Allow deletion of entries
+            * If there's a record of inputs in the DB, this one should probably warn the user about the number of inputs in which the "word to be deleted" appears, in a Cancel/Proceed dialogue.
+
+    TODO: Respond to the following: "The original list of settings was presumable created to be lined up with the Lindera output, but perhaps we should push it toward 'things one can do with these parts of speech.' Thoughts?"
+        Note: The "Japanese verb conjugation" sheet could come in handy, here.
+
+    TODO: Take a pass at all string-type settings (the DB table) values; convert them into enums (and use enum values in the DB) as appropriate
+        Pretty sure these are the remaining ones:
+            internal string UnknownTokenPolicy = "";
+                count.unknown_token_policy
+                    values: keep_surface | drop | bucket_unknown
+                    Default: keep_surface
+            internal string TokenKeyFields = "";
+                count.token_key_fields
+                    values: surface_only | surface_plus_pos | dictionary_plus_pos
+                    Default: surface_plus_pos
+
+    TODO: Answer the question, "When we're merging kana, should we only be merging kana that's UNK?  Lindera seems to recognize 'some' kana writings of words, and merging kana kinda feels like it's just getting in the way of that."
+        Follow-up: I like the thought of, "If one of the rows of output has a (non-UNK) PoS, use it for the other rows."
+        
+        Come to think of it, did ChatGPT even intend for multiple words to be merged? Or when it "merged kana," did it just intend to take one words at a time and replace all of its hiragana with kanakana (or vice versa)?
+            If that's indeed what's going on...then it really doen't seem like the behavior we're looking for here.🤔 
+
+    TODO: Add a setting: count.leave_stem_ni_verb_of_motion_constructions_intact, default = False (I suppose -- I could go either way on this); implement.
+
+    TODO (POLISHING STEP, I THINK): Consider every '[-te form]-[auxiliary verb]' construction; we might want to have settings for each one, to leave it intact
+        Per the verb conjugation sheet:
+            Ones where the construction has a meaning substantively different from the individual pieces:
+                ＋いく (changing state)
+                ＋いる / ＋る⁑ (cont./habitual)
+                ＋おく / ＋く⁑ (preparatory action)
+                ＋しまう * (completed action)
+                ＋ある (changed state)
+                ＋くる (state change)
+                ＋は いけない ** (“must not ~”)
+                ＋は (suggestive)
+                ＋もかまわたい (permissive)
+                ＋もいい（だ） / ＋いい⁑ (perm.)                
+                ＋も (“even though ~”)                
+                ＋あげる・くれる・もらう (benefit)
+            Ones where I'm not sure if it does or not🤔:
+                ＋よかった (“I'm glad that ~”)
+                ＋から ... (“after ~ing ...”)
+            Ones where it doesn't (...I don't think, anyhow):
+                ＋欲[ほ]しい (favour request)
+                ＋すみません (apologetic)
+                ＋ください (request, hon. vb.)
+            Ones we've written already done (...I think):
+                ＋みる (“try ~ and see”)    <---pretty sure we handled this one already
+
+    TODO: Consider every conjugation from the Japanese Verb Conjugation sheet that we've yet to address
+        Answer the question, "Do we want to make 1 or more settings specific to this?" 
+            If the answer is yet, let's do so.
+
+    TODO (MAYBE): Come up with a graceful way to handle typos.  I'm thinking "let the user choose with word the source text meant," or maybe add an entry to the custom DB that says "typo for [words that the source text might have meant] and let 'someone' choose the right one."
+        Alternate option: ignore them. (Pro: Easy! ...maybe.  I supposed that depends on how Lindera classifies them.  UNK, maybe?  Are we 'ignoring everything classified as UNK?  If so, then this'll be easy.  If we're not....then it might not be ~as~ easy.)
+        Another option: Enter them into the user definitions table.  (Pro: Staightforward enough, I'd imagine.)
+
+    TODO (MAYBE): Add things like "[stem] + 放題「ほうだい」," "[stem] + 方「かた」" to the settings to give the option of keeping them grouped, if Lindera's natural state isn't to keep them together
+        sub-TODO: Think of any other "[stem] + [another thing]" words like that (that aren't included in the Japanese Verb Conjugation sheet)
+
+    TODO (After we're 'basically done with the word count' stuff): Try each conjugated form on the "Japanses verb conjugation" sheet (not including ones that involve attaching particles or auxiliary verbs); make sure they all make it through the Lindera results -> word count step
+        A THOUGHT: Will we not do this as we go?  It kinda seems like we're gonna be manually checking each conjgated form as we go, so making a TODO out of this isn't necessary.
+            We'll see, I guess; if we start doing checking every conjugated form as we go, we can delete this TODO.
+
+
+
+--UI polishing: the timestamped input sidebar (from UI#1)------------------------------------------------------
+
+    TODO (EVENTUALLY): There's apparently a "LIMIT 50" to the query for rows.  Let's change that to query "a few screenfulls at a time" or some such, adding to the scrollable list as we go.  If we hit an ~actual~ upper limit....then we'll cross that bridge when we come to it.
+
+    TODO (EVENTUALLY) Answer the question, "Is ReadSourceMetadataDropdownItems() duplicating functionality (ie. when assembling data for the timestamped input sidebar and when assembling data for the 'source metadata' pane's drop-down)?  Can we consolidate it?"
+        *(Follow-up): Is this still relevant?  I feel like we re-worked that fn.  Let's look into it (at some point) and delete this TODO, if we can.
+
+    TODO: Answer the question: 'How about a "proceed to attaching source data" button (on UI #1's sidebar) as well as a "proceed to tagging" button, which skips the 'source data' step?🤔'
+        * Or rather, it creates a (timestamped_input, source_data) bundle where source_data is NULL.  (Or includes a timestamp but no actual source data, or something along those lines.)
+
+    TODO: Clicking the 'time' column header seems to be sorting by...the date, in ASCIIbetical order?🧐🤔  I'm not really sure, but it's not what we want, which is to sort it by timestamp ASC or DESC.
+
+    TODO: Give the sidebar rows either outlines or some other visible way to distinguish them (and tell when one's been clicked)
+        [FOLLOW-UP] The purple highlighting that ChatGPT went with makes it clear when one's when clicked, I suppose.  
+            I kinda doubt we'll keep that color, though.🤭
+            Also, the rows still need some kind of visual separation when they're ~not~ the one that's been clicked, I think.
+
+    TODO: Allow sidebar columns to be resizable and have their width be stored in the DB
+
+    TODO: Allow the sidebar row height to be resizable via click-and-drag
+        Expand the text to fill as many rows as are currently fittable within the row height
+        Store the row heights in the DB
+            (Store each row height individually -- which means identifying each row in the DB.  Not sure if that'll be overhead or be simple, but we'll figure that out later.)
+
+    TODO (AFTER ALLOWING COLUMNS TO BE RESIZED): Define a minimum width to the sidebar (when expanded).  
+        It should be something like 'delete button width' + 'width of each of the three columns abbreviated to '...'' + padding
+
+    TODO: Implement the 'custom' sorting option (which displays the rows by timestamped_input_sidebar_custom_sorting.display_order, descending).
+            Add a setting to the settings table called something like sidebar.timestamped_input.custom_sorting_activated (Default = false)
+            When the sorting type is changed (to one of the other two) and .custom_sorting_activated == False, we'll set the data in the _custom_sorting table accordingly.
+            When the user clicks/drags a row:
+                We'll set the .custom_sorting_activated to True (thereby stopping the 'overwrite when we change to one of the other sorting types' behavior)
+                We'll change _custom_sorting.display_order values according to the user's arrangement of the rows
+            When the sidebar becomes empty:
+                Set .custom_sorting_activated back to False.
+        Maybe also:
+            Add a "Clear custom sorting" button/option somewhere; implement in a way that restore the initial "track the current sorting method until the user initiates custom sorting" behavior.
+
+
+
+--polishing the 'choose source' modal dialogue spawned by the "assign source metadata" UI (from UI#2)----------
+
+    TODO: Give the dialog some padding around the edges.
+
+    TODO: Give it a button and/or make the dialog return the selection when one is chosen.   The latter seems unwise in a desktop setting, though; let's go with the button.
+
+    TODO: Constrain how far to the LHS we can expand the UI #2 sidebar
+        I'm thinking something like, "Don't let it get so big that any UI elements go wacky," eg. the per-row textboxes started to overlap
+
+
+
+--polishing the 'source metadata' pane (from UI#2)-------------------------------------------------------------
+
+    TODO: Add a 'template manager'  
+        * I'm envisioning a modal (or maybe modeless? TBD!) dialogue that lets the user:
+            * rename a template
+                *do we see any point in allowing "batch renaming" at this point?  I don't personally see one atm, but you never know.
+            * rename/reorder template keys
+            * (maybe) define (or remove) a default value for each key
+            * delete a template
+            (...list tbc as we think of more things for it to do.)
+        * We'll also need a button somewhere in the app to bring up this template manager.  Settings? 2nd UI pane? TBD!
+            * How about the LHS navigation bar?  Perhaps beneath a horizontal line under the existing 3 entries
+            * ...and possibly other places.  Settings window, for example.  Beyond that...I dunno yet.
+
+    TODO (MAYBE): Do 'template matching'
+        * When the list of keys in the source data changes, compare the new list against all templates in the DB
+            * If it matches any, select that template in the ComboBox
+            * If it doesn't, select "-" or something along those lines
+
+    TODO: Answer the question: "If we save an empty source data block (by clicking 'Save a copy of source data' when the source data is empty), the app allows it and we get a blank row in the list of summary strings; do we REALLY want that?🤔"
+        * We ~could~ disable the button until ~something~ has been input in either of the kv columns.  I don't think it would cause THAT much trouble
+
+    TODO: Move the button up next to the text box.  You know the ones I'm talking about, right?  Here's hoping so.
+        *[Follow-up] Uh...no, not off the top of my head.  Is it the "choose source" button, up to the RHS of the ComboBox? That seems to be the only button that we haven't specifcally placed somewhere in this UI atm.
+
+    TODO: Commit the horizontal bar's current height to the DB.  We'll (probably) use that value to place the horizontal bar, but:
+        * When a new input is selected, let's place the horizontal bar "comfortably beneath" the previews.
+            * Actually, let's let that be a user setting: (moving the horizontal bar automatically) or (not)
+
+    TODO: Add some column headers to the source data textboxes
+        * "Name" and "Value" or some such
+        * Let's add a separator between columns (possibly in the header) that lets the user control the relative column width.  Commit that width to the DB and read it on (if it's defined) when the pane is loaded.
+            * ...and commit that separator placement to the DB.  Possibly attach it to the template, so that each template has its own column width.  (And make its width 'relative to the pane' or some such.)
+
+    TODO: Modify the dialogue bought up when we click "Save to template" to do something like either:
+        * Offer a 'Preview template' checkbox; if it's clicked:
+            * Give a textbox in which the user can edit the template name before saving
+            * Bring up the textboxes in the dialogue; let the key names be edited; let 'default values' be added to the value boxes
+            * Let the keys be reordered
+        *In other words, let them do the same stuff they can do in the "template manager," minus deleting the template (as it hasn't been created at this point).
+
+    TODO: The 'timestamped_input preview panes' are only showing the first line of the input and word count blocks, but I was imagining them as showing the entirety of the contents in boxes were user-resizable.  Let's make that change, at some point.
+
+    TODO: Respond to the question, "Do we need to handle exceptions thrown because of violations of the timestamped_input_and_source_data table's unique constraint?  It can only be violated if two identical timestamps are generated, which seems unlikely to happen under normal use....but we should probably respond by having the app mention the error, so as to point out that something screwy just happened."
+        Initial thoughts: Yeah...eventually. Probably.
+            * We could say something like "A uniqueness constraint was just violated, which is SUPER unlikely to happen under normal use....so we're (1) ignoring all but the first click and (2) letting you know that your automated UI tester or w/e should wait at least a millisecond before clicking that button a 2nd time."
+
+    TODO (DEBUG): When we "Save as template" some keys where the value fields are populated, this empties out the value textboxes, which we probably shouldn't do.
+
+
+
+--polishing the source_data UI's sidebar (from UI#2)-----------------------------------------------------------
+
+    TODO: Answer the question: "It seems that, as of now, all source data blocks with is_reusable == 1 are returned and summary strings are generated; do we want to limit this to "one screenful at a time," adding new screenfuls only as the user scrolls down?"
+
+    TODO: Attach the lower dataGrid to the horizontal bar above so it so that they slide around together, instead of....w/e's going on atm.
+
+
+
+--polishing the TI+SD sidebar (from UI#2)------------------------------------------------------------------------
+
+    TODO: Put together a more informative summary string than "TI.id, SD.id, timestamp."  Surely we can do better than that...either in terms of "more informative" or possibly "even MORE terse!" =o
+
+    TODO (MAYBE): Sorting of TI+SD sidebar entries
+        * A THOUGHT: We should probably settle on a more final summary string (than "TI.id, SD.id, timestamp") before we decide how to sort it.
+        * But whatever we do, be sure to refresh the sidebar!  <---Adds this so that he can delete another TODO where this one the one remaining takeaway.
+
+    TODO (MAYBE): Add a "Load" button to the TI+SD sidebar
+    Notes from a previous TODO:
+        * a "Load" button, which populates the "input" area with the timestamped_input and the "source data" area with the source data, if it exists.
+                *To what end, though?  Let's do this IF we decide to allow overwriting existing TI+SD entries or something.  Otherwise, the user would be able to "save another copy with a new timestamp," which seems dopey to me.
+                    * What we ~could~ do is, when the user clicks the "Attach TI to SD" button, detect if a row is selected in the sidebar; if it is, prompt to overwrite that entry.  (We'll want to add a "last updated timestamp" to the TI+SD table, if we do this.  We'll also want to shuffle around the _rows table if the user changes SD, and possibly change the S_D_blocks table's SD id to 0 if the user deletes all of the rows.)
+    Notes from another previous TODO:
+        * "Are we actually going to have occasion to update a source_data block that's in the DB? There's a 'last updated' timestamp, but I'm not sure it'll ever see any use."
+            * Turns out, we might!  We're thinking of letting the user overwrite an existing TI+SD row (be selecting that row in the sidebar before they click the "Attach TI to SD" button); because each TI+SD has its own SD, any changes to the SD block that they make will need to be reflected in the _rows tables, and possibly the _blocks table if the SD block become empty.  While we're there, we may as well update a "last updated" timestamp in the _blocks table.
+                * This does raise the question, though...will we ever actually DO anything with that timestamp?  =o  (Answer: I dunno.)
+
+
+
+--polishing the "attach tags" UI (UI #3)
+    
+    TODO: Have the "Add new tag" button be enabled only when there's some kind of valid input in the TextBox beside it
+        ...which, in this case, just means "anything other than "nothing" or "just whitespace"
+
+    TODO: Have the UI refresh when the UI#3 pane is loaded, rather than just having it set up one on app-start.
+        * This is to avoid "I added a tag through the UI, deleted it via the DB, then figured if I changed to another UI and back to #3 it would refresh....but it didn't."
+
+    TODO: The UI#3 pane
+        *Things that apply to both tabs:
+            * Tags listbox -- dual list selection UI
+                * MAYBE: A 'use dual list selection UI' checkbox; if unchecked, just present the LHS listbox.  If it's checked, present the 2nd listbox as well.
+                * Add a 2nd listbox
+                * Add ">>", "<<" (and any other necessary buttons)
+                    * Have them move selected items between the two listboxes
+                * Have the 'attach/detach tags' and 'delete tag' operations respect the dual listbox, if it's used.
+                    * If it's not, respect the single- or multi-selection of the LHS listbox          
+            * Tags listbox -- context-sensitive menu
+                * Attach
+                * Detach
+                    * In multi-input mode, have this respect the "Strict mode" checkbox beside the "Detach tag(s)" button
+                * a separator
+                * Rename
+                * Delete         
+        * (EVENTUALLY) Multi-input tab
+            * A dual list selection UI for TI+SD bundles
+                * Two side-by-side listboxes and some >>, <<, etc. buttons to move TI+SDs between them
+            * UI elements to attach one or more tags to multiple TI+SD bundles
+                *A list of tags, a list of "selected" tags, a list of TI+SD bundles, a list of "selected TI+SD bundles," an "Attach tag(s)" button
+            * UI elements to detach one or more tags from one or more TI+SD bundles
+                * Lists of multiple tags and multiple TI+SD bundles are constructed (via "dual list selection UI" for each or via ctrl/shift-click)
+                * We add a "Remove selected tags" button
+                * A "Strict mode" checkbox (beside the "Remove selected tags" button) which:
+                    * When unchecked: removes all instances of selected tags from the selected TI+SD bundles (with no complaints about TI+SD bundles with with selected tags aren't present).
+                    * When checked: it complains about selected TI+SD bundles for which one more more selected tags aren't present (either by not enabling the "remove all tags" button or by giving an error; probably the former.)
+            * Pane -- Tags listbox
+                * MAYBE: If multiple TI+SD bundles are selected, bold tags that are attached to every TI+SD bundle, then italicize tags that are attached to some-but-not-all TI+SD bundles.
+
+    TODO: Create a Tag Manager [modal/modeless (TBD)] dialogue (or possibly a UI pane; TBD)
+        * REMINDER: If we want to transition smoothly between the main window's UI and a dialogue, we'll need to store the state in an object that isn't owned by either.
+        * This will allow operations on multiple tags (eg. merge, although we may think of more later) in a way that doesn't force the app's UI to accomodate those operations
+        * It might be nice to let the user selected a TI+SD bundle and see what tags are attached to it; does this seem like the UI for doing that?  Maybe a 2nd tab of this dialogue or something
+        *"Remove all unused tags", or just the option to select a single tag and delete it (which, if cascade is enabled, will remove all rows from ti+sd+tags that use that tag.id, iiuc)
+
+
+
+--polishing the "attach tags" Sidebar (UI #3)
+
+    TODO: Add to the UI#3 sidebar
+        * (LATER, AND 'MAYBE') A list of 'recently used tags,' maybe?  For "quick reference," although that suggests that we can select a TI+SD bundle on the pane, select one or more tags in the sidebar and attach in bulk.  <---which sounds like a fine idea
+        * (MAYBE): "Tag selections," maybe?  As in, pre-assembled assortments of tags that a user frequently uses.  Kinda like templates, but 'tags.'  *shrug*
+    
+
+
+--polishing the "search and export" pane (UI#4)
+
+    TODO (MAYBE) UI#4 pane, listbox of tags -- give the option of using a dual list selection UI
+
+
+
+--eventually---------------------------------------------------------------------------------------
+
+    TODO: Repurpose lindera_results into a cache
+        Two pieces, apparently:
+            Row collapsing (DONE)
+            Row invalidation
+        Original notes:
+            "Treating lindera_results as a cache aligns with how it is already behaving:
+                text_entries is the stable identity layer.
+                lindera_results is a derived artifact keyed by (text_entry_id, dict) plus time.
+                Multiple rows for the same text are acceptable, and later you can collapse or invalidate them.
+            When you get to that refactor, the usual next steps are:
+                Add a uniqueness rule or lookup on (text_entry_id, dict) when you want cache reuse.
+                Decide whether a newer result supersedes older ones or whether they coexist.
+                Possibly drop created_utc there as well and replace it with a content hash of result_json."
+
+    TODO (ONCE SETTINGS ARE MORE SET IN STONE): Create a UI for letting the user change the count.* settings from the DB
+
+    TODO: Answer the question: "At what point do we want to pre-generate summary strings and store them in the DB?"
+        * MAYBE: When we allow searching by summary string, maybe?  Not sure atm.  Or possibly when we foresee the possibility that one of these lists gets long enough to be quicker ~because~ we had pre-generated those summary strings.
+
+    TODO (When the times comes to remove functionality from the app and put it in a backend): It's just to my attention that "any ol' app" can host a WASM module, meaning we could be rebuilding the rust backend (for this app and ~any others we've written~) as a WASM module and slotting it directly into the standalone version.
+        ChatGPT insists that, with C#, hosting a WASM module is straightforward....so let's skip the FFI step and go right to the WASM module step (when the time comes, anyhow).
+            REMINDER: This will be for the ~standalone~ version of the app.  But hopefully the same WASM module will work in the standalone version AND in the API/thin-client version, hopefully after an easy(-ish) transition.  We'll see.
+    
+
+
+--for the future-----------------------------------------------------------------------------------
+
+    TODO: Think about the following question: "Do we need to create a 2nd app for updating old text inputs where source metadata has already been set?  We could make selection (and multi-selection) easier than a ComboBox, make batch updates more viable, stuff like that."🤔
+        (3/12/26): I just read this and thought, "Um...I think this was from a REALLY early version of UI #2.  Do we even still have ComboBoxes in the app?  Let's check! Also, I think this was from before we chose to write out separate copies of the source data, pretty much every time.  (Possibly "very much every time;" I'm not confident enough to claim that atm, though.)  
+            Also, my response to the actual question there is "yikes, I hope not....if only because I'm not really sure what it's asking.🤭"
+
+
+
+----DONE, but left around for notes----
+    TODO (DONE): Regarding this comment:
+        "slang: this is why I suggested we start our own dictionary for words that don't appear in Lindera's two dictionaries. I'd imagine that we could include that dictionary (likely just a .txt file) with the app and let the app user continue to add to it...or, better yet, let that 'supplemental dictionary' be present in the DB behind the app and let user share their 'private DBs' via the TPS🤔 "
+        ...let's start that DB.  (Note: In the WASM module version, the TPS's DB will act as this DB.)
+        For a standalone version of this app, we'll have the DB store:
+            * user settings
+            * the user-contributed entries (ie. words and their meanings)
+            * the pre-lindera text, lindera resuluts, word counts, etc.
+            * tags
+            * text source information
+
+    TODO (DONE): Flesh out the count.* settings
+            # Unknown tokens
+            count.unknown_token_policy
+                values: keep_surface | drop | bucket_unknown
+                Default: keep_surface
+
+            # Word identity / grouping
+            count.token_key_fields
+                values: surface_only | surface_plus_pos | dictionary_plus_pos
+                Default: surface_plus_pos
+
+    TODO: Answer the question, "With the 'source_data_block and _stash' tables, we have a field called starting_template_id; at this point, I don't remember what we were planning on doing with that.  Do you?"  (...where the 'you' in that question presumably refers to our past self or something.)
+        *FOLLOW UP: If we implement that "template matching" that we were thinking about earlier in the project, this would be a quick way to set the "starting template" as the selected template in the comboBox.  That's assuming we still bother doing the templtae matching, which...I dunno if we're still interested in that.  We'll have to think about it.

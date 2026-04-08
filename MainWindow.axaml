@@ -1,0 +1,588 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:local="clr-namespace:jpn_lang_dbm_desktop_app"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="jpn_lang_dbm_desktop_app.MainWindow"
+        Title="jpn_lang_dbm_desktop_app">
+  <Window.Resources>
+    <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+    <local:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter"/>
+  </Window.Resources>
+  <ui:NavigationView x:Name="NavView"
+                     PaneDisplayMode="LeftCompact"
+                     IsBackButtonVisible="False"
+                     SelectionChanged="NavView_SelectionChanged">
+    <ui:NavigationView.MenuItems>
+      <ui:NavigationViewItem Content="Import text" Tag="import" IsSelected="True" />
+      <ui:NavigationViewItem Content="Attach source data" Tag="source" />
+      <ui:NavigationViewItem Content="Attach tags" Tag="tags" />
+      <ui:NavigationViewItem Content="Search and export" Tag="search" />
+      <ui:NavigationViewItemSeparator />
+      <ui:NavigationViewItem Content="Template Manager" Tag="template_manager" />
+      <ui:NavigationViewItem Content="Tag Manager" Tag="tag_manager" />
+    </ui:NavigationView.MenuItems>
+    <ui:NavigationView.Content>
+      <Grid>
+        <!-- Page 1: Import text -->
+        <Grid x:Name="ImportTextPage" IsVisible="True" ColumnDefinitions="*,5,Auto">
+          <Grid Grid.Column="0"
+                RowDefinitions="2*,4*,2*,Auto"
+                ColumnDefinitions="*,Auto"
+                Margin="16"
+                ColumnSpacing="12"
+                RowSpacing="12">
+            <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,*">
+              <TextBlock Text="Input:"
+                         FontSize="16"
+                         Margin="0,0,0,6" />
+              <TextBox x:Name="InputTextBox"
+                       Grid.Row="1"
+                       FontFamily="Noto Sans CJK JP, Segoe UI Emoji"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       Watermark="Text goes here" />
+            </Grid>
+            <Button x:Name="SubmitButton"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Content="Submit"
+                    VerticalAlignment="Top"
+                    Padding="16,10"
+                    Click="SubmitButton_OnClick" />
+            <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
+              <TextBlock Text="Lindera output:"
+                         FontSize="16"
+                         Margin="0,0,0,6" />
+              <TextBox x:Name="LinderaTextBox"
+                       Grid.Row="1"
+                       FontFamily="Noto Sans CJK JP, Segoe UI Emoji"
+                       AcceptsReturn="True"
+                       IsReadOnly="True"
+                       TextWrapping="NoWrap"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            </Grid>
+            <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
+              <TextBlock Text="Word counts:"
+                         FontSize="16"
+                         Margin="0,0,0,6" />
+              <TextBox x:Name="ResultsTextBox"
+                       Grid.Row="1"
+                       FontFamily="Noto Sans CJK JP, Segoe UI Emoji"
+                       AcceptsReturn="True"
+                       IsReadOnly="True"
+                       TextWrapping="NoWrap"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            </Grid>
+            <Button x:Name="CommitButton"
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Content="Commit to database and proceed to tagging"
+                    IsEnabled="False"
+                    Padding="16,10"
+                    HorizontalAlignment="Right" />
+          </Grid>
+          <GridSplitter x:Name="ImportRightPaneSplitter"
+                        Grid.Column="1"
+                        Width="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch" />
+          <Grid x:Name="ImportRightPaneRoot"
+                Grid.Column="2"
+                RowDefinitions="Auto,*"
+                Margin="8"
+                SizeChanged="ImportRightPaneRoot_OnSizeChanged">
+            <Button Content="◀"
+                    Width="28"
+                    Height="28"
+                    HorizontalAlignment="Right"
+                    Click="ToggleImportRightPane_OnClick" />
+            <Grid Grid.Row="1" RowDefinitions="Auto,Auto,*,Auto">
+              <TextBlock Grid.Row="0"
+                         Text="Recent Inputs"
+                         FontSize="16" />
+              <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Sort:"
+                           VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <RadioButton x:Name="TimestampedInputSort_Custom"
+                               Content="Custom"
+                               GroupName="TimestampedInputSort"
+                               Tag="Custom"
+                               Checked="TimestampedInputSortRadio_Checked" />
+                  <RadioButton x:Name="TimestampedInputSort_Asc"
+                               Content="Chronological (ASC)"
+                               GroupName="TimestampedInputSort"
+                               Tag="ChronologicalAscending"
+                               Checked="TimestampedInputSortRadio_Checked" />
+                  <RadioButton x:Name="TimestampedInputSort_Desc"
+                               Content="Chronological (DESC)"
+                               GroupName="TimestampedInputSort"
+                               Tag="ChronologicalDescending"
+                               Checked="TimestampedInputSortRadio_Checked" />
+                </StackPanel>
+              </StackPanel>
+              <DataGrid x:Name="TimestampedInputItems"
+                        Grid.Row="2"
+                        AutoGenerateColumns="False"
+                        HeadersVisibility="Column"
+                        IsReadOnly="True"
+                        x:DataType="local:TimestampedInputRow"
+                        SelectionChanged="TimestampedInputItems_SelectionChanged">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Time" Width="160" Binding="{Binding TimestampUtc}" />
+                  <DataGridTextColumn Header="Input" Width="*" Binding="{Binding InputText}" />
+                  <DataGridTextColumn Header="Word counts" Width="2*" Binding="{Binding WordCountDisplay}" />
+                  <DataGridTemplateColumn Header="" Width="56">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="local:TimestampedInputRow">
+                        <Button Content="[x]"
+                                Width="36"
+                                Height="24"
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                Foreground="IndianRed"
+                                Tag="{Binding Id}"
+                                Click="TimestampedInputDelete_OnClick" />
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                </DataGrid.Columns>
+              </DataGrid>
+              <Button x:Name="AssignSourceDataButton"
+                      Grid.Row="3"
+                      Content="Assign source data"
+                      Padding="16,10"
+                      HorizontalAlignment="Center"
+                      Margin="0,20,0,0"
+                      IsEnabled="False"
+                      Click="AssignSourceDataButton_OnClick" />
+            </Grid>
+          </Grid>
+        </Grid>
+        <!-- Page 2: Attach source data to a timestamped input -->
+        <Grid x:Name="SourceMetadataPage" IsVisible="False" ColumnDefinitions="*,5,Auto">
+          <Grid Grid.Column="0"
+                Margin="16"
+                RowDefinitions="Auto,Auto,Auto,*"
+                RowSpacing="8">
+            <TextBlock Grid.Row="0"
+                      FontSize="18"
+                      Text="Attach source data to a timestamped input" />
+            <TextBox x:Name="SelectedSourceTextBox"
+                    Grid.Row="1"
+                    Watermark="&lt;No input selected&gt;"
+                    IsReadOnly="True"
+                    Focusable="False"
+                    IsTabStop="False"
+                    IsHitTestVisible="False"
+                    HorizontalAlignment="Stretch"
+                    Padding="10,8"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Background="#00000000" />
+            <Grid Grid.Row="2"
+                  ColumnDefinitions="Auto,8,Auto">
+              <Button x:Name="ChooseSourceButton"
+                      Grid.Column="0"
+                      Content="Choose source"
+                      Click="ChooseSourceButton_OnClick"/>
+              <Button x:Name="ClearSourceButton"
+                      Grid.Column="2"
+                      Content="Clear"
+                      Click="ClearSourceButton_OnClick"/>
+            </Grid>
+            <Grid x:Name="SelectedSourcePreviewRoot"
+                  Grid.Row="3"
+                  Margin="0,12,0,0"
+                  RowDefinitions="Auto,5,Auto,*">
+              <Grid x:Name="SelectedSourcePreviewGrid"
+                    Grid.Row="0"
+                    ColumnDefinitions="Auto,*,*"
+                    ColumnSpacing="8"
+                    SizeChanged="SelectedSourcePreviewGrid_OnSizeChanged">
+                <TextBlock x:Name="SelectedSource_Time"
+                          Text=""
+                          TextWrapping="NoWrap" />
+                <TextBlock x:Name="SelectedSource_InputPreview"
+                          Grid.Column="1"
+                          Text=""
+                          TextWrapping="NoWrap"
+                          TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="SelectedSource_WordCountPreview"
+                          Grid.Column="2"
+                          Text=""
+                          TextWrapping="NoWrap"
+                          TextTrimming="CharacterEllipsis" />
+              </Grid>
+              <GridSplitter Grid.Row="1"
+                            Height="5"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch" />
+              <Grid Grid.Row="2"
+                    Margin="0,12,0,0"
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="8">
+                <TextBlock Text="Template:"
+                          VerticalAlignment="Center"/>
+                <ComboBox x:Name="TemplateComboBox"
+                          Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          SelectionChanged="TemplateComboBox_SelectionChanged"/>
+              </Grid>
+              <ScrollViewer Grid.Row="3"
+                            VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Disabled">
+                <Grid RowDefinitions="Auto,*">
+                  <Grid x:Name="TemplateBlankFieldsRow"
+                        Grid.Row="0"
+                        Margin="0,12,0,0"
+                        IsVisible="False">
+                    <StackPanel Spacing="8">
+                      <ItemsControl x:Name="TemplateKeyValueRowsItemsControl">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Spacing="8"/>
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="local:TemplateKeyValueRow">
+                            <Grid ColumnDefinitions="16,*,16,*,Auto,16" ColumnSpacing="8">
+                              <TextBox Grid.Column="1"
+                                      Text="{Binding LeftText}"/>
+                              <TextBox Grid.Column="3"
+                                      Text="{Binding RightText}"/>
+                              <Button Grid.Column="4"
+                                      Content="−"
+                                      Width="32"
+                                      Height="32"
+                                      Padding="0"
+                                      FontSize="20"
+                                      FontWeight="Bold"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Center"
+                                      Tag="{Binding}"
+                                      Click="TemplateDeleteRowButton_OnClick"/>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <Grid ColumnDefinitions="16,Auto,12,Auto,*">
+                        <Button x:Name="TemplateAddRowButton"
+                                Grid.Column="1"
+                                Content="+"
+                                Width="28"
+                                Height="28"
+                                FontSize="18"
+                                Padding="0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Click="TemplateAddRowButton_OnClick"/>
+                        <StackPanel Grid.Column="3"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Spacing="6">
+                          <CheckBox x:Name="AllowSourceDataReuseCheckBox"/>
+                          <TextBlock Text="Allow reuse of source data"
+                                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button x:Name="SaveAsTemplateButton"
+                                Grid.Column="5"
+                                Content="Save as template"
+                                Padding="12,8"
+                                Click="SaveAsTemplateButton_OnClick"/>
+                      </Grid>
+                      <Grid ColumnDefinitions="*,12,*">
+                        <Button x:Name="AttachSourceDataToInputButton"
+                                Grid.Column="0"
+                                Content="Attach source data to a timestamped input"
+                                Padding="12,8"
+                                HorizontalAlignment="Stretch"
+                                IsEnabled="False"
+                                Click="AttachSourceDataToInputButton_OnClick"/>
+                        <Button x:Name="SaveCopyOfSourceDataButton"
+                                Grid.Column="2"
+                                Content="Save a copy of source data"
+                                Padding="12,8"
+                                HorizontalAlignment="Stretch"
+                                Click="SaveCopyOfSourceDataButton_OnClick"/>
+                      </Grid>
+                    </StackPanel>
+                  </Grid>
+                  <Grid Grid.Row="1"/>
+                </Grid>
+              </ScrollViewer>
+            </Grid>
+          </Grid>
+          <GridSplitter x:Name="UI2_RightPaneSplitter_Source"
+                        Grid.Column="1"
+                        Width="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch" />
+          <Grid x:Name="UI2_RightPaneRoot_Source"
+                Grid.Column="2"
+                RowDefinitions="Auto,*"
+                Margin="8"
+                SizeChanged="UI2_RightPaneRoot_OnSizeChanged">
+            <Button Content="◀"
+                    Width="28"
+                    Height="28"
+                    HorizontalAlignment="Right"
+                    Click="ToggleUI2RightPane_OnClick" />
+            <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto,5,Auto,*,Auto">
+              <TextBlock Grid.Row="0" Text="Timestamped input + source data" FontSize="14" Margin="0,0,0,6"/>
+              <DataGrid x:Name="TimestampedInputSourceDataGrid"
+                        Grid.Row="1"
+                        x:DataType="local:TimestampedInputSourceDataRow"
+                        AutoGenerateColumns="False"
+                        HeadersVisibility="None"
+                        IsReadOnly="True"
+                        SelectionChanged="TimestampedInputSourceDataGrid_SelectionChanged">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Width="*"
+                                      Binding="{Binding SummaryText}" />
+                </DataGrid.Columns>
+              </DataGrid>
+              <Grid Grid.Row="2"
+                    ColumnDefinitions="*,12,*"
+                    Margin="0,12,0,0">
+                <Button x:Name="TimestampedInputSourceAttachTagsButton"
+                        Grid.Column="0"
+                        Content="Attach tags"
+                        Padding="12,8"
+                        HorizontalAlignment="Stretch"
+                        IsEnabled="False"
+                        Click="TimestampedInputSourceAttachTagsButton_OnClick"/>
+                <Button x:Name="TimestampedInputSourceDeleteButton"
+                        Grid.Column="2"
+                        Content="Delete"
+                        Padding="12,8"
+                        HorizontalAlignment="Stretch"
+                        IsEnabled="False"
+                        Click="TimestampedInputSourceDeleteButton_OnClick"/>
+              </Grid>
+              <GridSplitter Grid.Row="3" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+              <TextBlock Grid.Row="4" Text="Source data block stash" FontSize="14" Margin="0,6,0,6"/>
+              <DataGrid x:Name="SourceDataBlockRowsGrid" Grid.Row="5" x:DataType="local:SourceDataBlockRowGridRow" AutoGenerateColumns="False" HeadersVisibility="None" IsReadOnly="True">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Width="*" Binding="{Binding SummaryText}"/>
+                </DataGrid.Columns>
+              </DataGrid>
+              <Grid Grid.Row="6" ColumnDefinitions="*,12,*" Margin="0,8,0,0">
+                <Button x:Name="SourceDataStashLoadButton" Grid.Column="0" Content="Load" Padding="12,8" HorizontalAlignment="Stretch" IsEnabled="False" Click="SourceDataStashLoadButton_OnClick"/>
+                <Button x:Name="SourceDataStashDeleteButton" Grid.Column="2" Content="Delete" Padding="12,8" HorizontalAlignment="Stretch" IsEnabled="False" Click="SourceDataStashDeleteButton_OnClick"/>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+        <!-- Page 3: Attach tags -->
+        <Grid x:Name="AttachTagsPage" IsVisible="False" ColumnDefinitions="*,5,Auto">
+          <Grid Grid.Column="0" Margin="16">
+            <Grid RowDefinitions="Auto,*" RowSpacing="12" MinHeight="0">
+              <TextBlock Grid.Row="0"
+                        FontSize="18"
+                        Text="Attach tags" />
+              <TabControl x:Name="AttachTagsTabControl" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" MinHeight="0">
+                <TabItem>
+                  <TabItem.Header>
+                    <TextBlock Text="Single Input" FontSize="14"/>
+                  </TabItem.Header>
+                  <Grid Margin="8" MinHeight="0">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="*" MinHeight="120"/>
+                      <RowDefinition Height="5"/>
+                      <RowDefinition Height="*" MinHeight="160"/>
+                    </Grid.RowDefinitions>
+                    <!-- TOP (fixed-height content) -->
+                    <Grid Grid.Row="0"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowSpacing="8"
+                          VerticalAlignment="Top">
+                      <TextBlock Grid.Row="0"
+                                Text="Select TI + Source Data bundle"
+                                FontSize="16"/>
+                      <TextBox Grid.Row="1"
+                              x:Name="SelectedBundleTextBox"
+                              Watermark="&lt;No bundle selected&gt;"
+                              IsReadOnly="True"
+                              Focusable="False"
+                              IsTabStop="False"
+                              IsHitTestVisible="False"
+                              VerticalAlignment="Top"
+                              Padding="10,8"
+                              BorderThickness="1"
+                              CornerRadius="4"
+                              Background="#00000000"/>
+                      <Grid Grid.Row="2"
+                            ColumnDefinitions="Auto,8,Auto"
+                            VerticalAlignment="Top">
+                        <Button x:Name="ChooseBundleButton"
+                                Grid.Column="0"
+                                Content="Choose input w/ source"
+                                Click="ChooseBundleButton_OnClick"/>
+                        <Button x:Name="ClearBundleButton"
+                                Grid.Column="2"
+                                Content="Clear"
+                                Click="ClearBundleButton_OnClick"/>
+                      </Grid>
+                      <Grid Grid.Row="3"
+                            x:Name="SelectedBundlePreviewRoot"
+                            Margin="0,8,0,0"
+                            VerticalAlignment="Top">
+                        <Grid x:Name="SelectedBundlePreviewGrid"
+                              ColumnDefinitions="140,*,*"
+                              ColumnSpacing="8"
+                              VerticalAlignment="Top">
+                          <TextBlock x:Name="SelectedBundle_Time"
+                                    Grid.Column="0"
+                                    TextWrapping="NoWrap"
+                                    VerticalAlignment="Center"/>
+                          <TextBlock x:Name="SelectedBundle_InputPreview"
+                                    Grid.Column="1"
+                                    TextWrapping="NoWrap"
+                                    TextTrimming="CharacterEllipsis"
+                                    VerticalAlignment="Center"/>
+                          <TextBlock x:Name="SelectedBundle_SourcePreview"
+                                    Grid.Column="2"
+                                    TextWrapping="NoWrap"
+                                    TextTrimming="CharacterEllipsis"
+                                    VerticalAlignment="Center"/>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                    <!-- SPLITTER -->
+                    <GridSplitter Grid.Row="1"
+                                  Height="5"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  ResizeDirection="Rows"/>
+                    <!-- BOTTOM -->
+                    <Grid Grid.Row="2"
+                          RowDefinitions="Auto,8,*,Auto"
+                          MinHeight="0">
+                      <Grid Grid.Row="0"
+                            ColumnDefinitions="*,Auto,Auto"
+                            ColumnSpacing="8"
+                            VerticalAlignment="Top">
+                        <TextBox x:Name="Tab1TextBox"
+                                TextChanged="Tab1TextBox_OnTextChanged"
+                                AcceptsReturn="False"
+                                TextWrapping="NoWrap"
+                                VerticalAlignment="Top"/>
+                        <Button x:Name="Tab1AddTagButton"
+                                Grid.Column="1"
+                                Content="Add new tag"
+                                Padding="12,6"
+                                VerticalAlignment="Top"
+                                Click="Tab1AddTagButton_OnClick"
+                                IsEnabled="False"/>
+                        <Button x:Name="DeleteTagButton"
+                                Grid.Column="2"
+                                Content="Delete tag(s)"
+                                Padding="12,6"
+                                VerticalAlignment="Top"
+                                IsEnabled="False"
+                                Click="DeleteTagButton_OnClick"/>
+                      </Grid>
+                      <Border Grid.Row="2"
+                              MinHeight="0"
+                              BorderThickness="1"
+                              BorderBrush="{DynamicResource ThemeControlBorderBrush}"
+                              Background="{DynamicResource ThemeControlBackgroundBrush}"
+                              Padding="4"
+                              ClipToBounds="True">
+                        <ListBox x:Name="Tab1ListBox"
+                                SelectionChanged="Tab1ListBox_SelectionChanged"
+                                SelectionMode="Multiple"
+                                BorderThickness="0"
+                                Background="Transparent">
+                          <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="local:TagDisplay">
+                              <ItemsControl ItemsSource="{ReflectionBinding Parts}">
+                                <ItemsControl.ItemsPanel>
+                                  <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                  </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="local:TagDisplayPart">
+                                    <TextBlock Text="{ReflectionBinding Text}"
+                                              FontWeight="{Binding IsAttached, Converter={StaticResource BoolToFontWeightConverter}}"
+                                              Background="{Binding IsMatch, Converter={StaticResource BoolToBrushConverter}}"/>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </DataTemplate>
+                          </ListBox.ItemTemplate>
+                        </ListBox>
+                      </Border>
+                      <StackPanel Grid.Row="3"
+                                  Orientation="Horizontal"
+                                  HorizontalAlignment="Right"
+                                  Spacing="8"
+                                  Margin="0,8,0,0">
+                        <Button x:Name="AttachTagButton"
+                                Content="Attach tag(s)"
+                                Padding="12,6"
+                                IsEnabled="False"
+                                Click="AttachTagButton_OnClick"/>
+                        <Button x:Name="DetachTagButton"
+                                Content="Detach tag(s)"
+                                Padding="12,6"
+                                IsEnabled="False"
+                                Click="DetachTagButton_OnClick"/>
+                      </StackPanel>
+                    </Grid>
+                  </Grid>
+                </TabItem>
+                <TabItem>
+                  <TabItem.Header>
+                    <TextBlock Text="Multiple Input" FontSize="14"/>
+                  </TabItem.Header>
+                  <Grid Margin="8" RowDefinitions="Auto,8,*" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                      <TextBox x:Name="Tab2TextBox" TextChanged="Tab2TextBox_OnTextChanged"/>
+                      <Button Grid.Column="1" Content="Add new tag" Padding="12,6" Click="Tab2AddTagButton_OnClick"/>
+                    </Grid>
+                    <ListBox Grid.Row="2"
+                              x:Name="Tab2ListBox"
+                              SelectionMode="Multiple"
+                              VerticalAlignment="Stretch"
+                              MinHeight="200"/>
+                  </Grid>
+                </TabItem>
+              </TabControl>
+            </Grid>
+          </Grid>
+          <GridSplitter x:Name="UI2RightPaneSplitter_Tags"
+                        Grid.Column="1"
+                        Width="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch" />
+          <Grid x:Name="UI2RightPaneRoot_Tags"
+                Grid.Column="2"
+                RowDefinitions="Auto,*"
+                Margin="8"
+                SizeChanged="UI2_RightPaneRoot_OnSizeChanged">
+            <Button Content="◀"
+                    Width="28"
+                    Height="28"
+                    HorizontalAlignment="Right"
+                    Click="ToggleUI2RightPane_OnClick" />
+            <local:AttachTagsSidebar x:Name="AttachTagsSidebarControl" Grid.Row="1"/>
+          </Grid>
+        </Grid>
+        <!-- Page 4: Search and export -->
+        <local:UI4_Pane x:Name="SearchExportPage" IsVisible="False"/>
+      </Grid>
+    </ui:NavigationView.Content>
+  </ui:NavigationView>
+</Window>

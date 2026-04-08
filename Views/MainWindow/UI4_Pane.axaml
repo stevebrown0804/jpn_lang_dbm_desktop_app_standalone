@@ -1,0 +1,83 @@
+<!-- UI4_Pane.axaml -->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:jpn_lang_dbm_desktop_app"
+             x:Class="jpn_lang_dbm_desktop_app.UI4_Pane">
+    <UserControl.Resources>
+      <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+    </UserControl.Resources>
+  <Grid RowDefinitions="Auto,*,5,*,Auto"
+        RowSpacing="12"
+        Margin="16">
+    <TextBlock Grid.Row="0"
+               Text="Search and Export"
+               FontSize="18"/>
+    <Grid Grid.Row="1"
+          RowDefinitions="Auto,8,*"
+          MinHeight="0">
+      <TextBox x:Name="TagFilterTextBox"
+               Grid.Row="0"
+               TextChanged="TagFilterTextBox_OnTextChanged"
+               AcceptsReturn="False"
+               TextWrapping="NoWrap"
+               Watermark="Filter tags"/>
+      <Border Grid.Row="2"
+              MinHeight="0"
+              BorderThickness="1"
+              BorderBrush="{DynamicResource ThemeControlBorderBrush}"
+              Background="{DynamicResource ThemeControlBackgroundBrush}"
+              Padding="4"
+              ClipToBounds="True">
+        <ListBox x:Name="TagListBox"
+                 SelectionMode="Multiple"
+                 BorderThickness="0"
+                 Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="local:TagDisplay">
+              <ItemsControl ItemsSource="{ReflectionBinding Parts}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="local:TagDisplayPart">
+                    <TextBlock Text="{ReflectionBinding Text}"
+                               Background="{Binding IsMatch, Converter={StaticResource BoolToBrushConverter}}"/>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+    </Grid>
+    <GridSplitter Grid.Row="2"
+                  Height="5"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  ResizeDirection="Rows"/>
+    <Grid Grid.Row="3"
+          RowDefinitions="Auto,8,*"
+          MinHeight="0">
+      <TextBlock Grid.Row="0"
+                 Text="Aggregate word count"
+                 FontSize="14"/>
+      <TextBox x:Name="AggregateWordCountTextBox"
+               Grid.Row="2"
+               IsReadOnly="True"
+               AcceptsReturn="True"
+               TextWrapping="NoWrap"
+               FontFamily="Noto Sans CJK JP, Segoe UI Emoji"
+               ScrollViewer.HorizontalScrollBarVisibility="Auto"
+               ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+    </Grid>
+    <Button x:Name="ExportButton"
+            Grid.Row="4"
+            Content="Export"
+            Padding="16,10"
+            HorizontalAlignment="Right"
+            Click="ExportButton_OnClick"/>
+  </Grid>
+</UserControl>

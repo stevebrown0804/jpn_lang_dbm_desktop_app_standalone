@@ -1,0 +1,43 @@
+<!-- UI3_AttachTagsSidebar.axaml -->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="jpn_lang_dbm_desktop_app.AttachTagsSidebar">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,5,*"
+        RowSpacing="8"
+        Margin="8">
+    <TextBlock Grid.Row="0"
+               Text="Tag viewer"
+               FontSize="14"/>
+    <TextBlock Grid.Row="1"
+               Text="TI+SD bundles"/>
+    <ListBox x:Name="BundleListBox"
+             Grid.Row="2"
+             DisplayMemberBinding="{ReflectionBinding SummaryText}"/>
+    <Grid Grid.Row="3"
+          RowDefinitions="Auto,*"
+          RowSpacing="8">
+      <TextBlock Grid.Row="0"
+                 Text="Attached tags"/>
+      <ListBox x:Name="AttachedTagsListBox"
+               Grid.Row="1"
+               SelectionMode="Single">
+        <ListBox.ContextFlyout>
+          <MenuFlyout>
+            <MenuItem Header="Detach"
+                      Click="DetachMenuItem_OnClick"/>
+          </MenuFlyout>
+        </ListBox.ContextFlyout>
+      </ListBox>
+    </Grid>
+    <GridSplitter Grid.Row="4"
+                  Height="5"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  ResizeDirection="Rows"/>
+    <TextBlock Grid.Row="5"
+               Text="&lt;placeholder&gt;"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"/>
+  </Grid>
+</UserControl>
