@@ -18,7 +18,7 @@ How to run (at this point):
 2. Navigate to the project root, in a console
 3. `dotnet run`
 
-You can probably also do this (in a graphical UI way) in Visual Studio, but I haven't tried that yet.  I wrote this thing in VS Codium, using WSL.
+You can probably also do this (in a GUI way) in Visual Studio, but I haven't tried that yet.  I wrote this thing in VS Codium, using WSL.
 
 ---
 
