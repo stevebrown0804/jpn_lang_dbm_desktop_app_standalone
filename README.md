@@ -4,7 +4,7 @@ This app currently does the following:
 1. Lets you paste in Japanese text, which it then passes to Lindera (a rust crate that wraps MeCab; its functionality is exposed via a WASM module that the app uses); from those Lindera results, the app produces a count of the words within the text.  (Not particularly reliably at this point, but that's why it's "the first alpha release."
 2. Allows the user to attach key/value pairs (which I'm calling 'source data'), if they so choose.  (And, btw, if they choose not to, they'll still have to attach a blank source data block.)
 3. Allows the user to define and attach tags to an input+source pair.
-4. Once you have at least one tagged input in the DB, the app will produce an aggregate word count; from there, you can use the "Search and Export" UI to refine that aggregate word count by tags, then export it to TSV file.
+4. Once you have at least one tagged input in the DB, the app will produce an aggregate word count; from there, you can use the "Search and Export" UI to refine that aggregate word count by tags, then export that refined aggregate word count to TSV file.
 
 ---
 
@@ -62,5 +62,8 @@ A) Yep.  And I don't plan to dumb it down at all.  I had a very specific audienc
 
 Q) It's full of UI bugs!
 A) hahahah, yep.  We'll get them cleaned up "eventually."
+
+Q) What's a TSV file?
+A) It's just a text file, so you can open it in Notepad or whatever.  But the "TSV" specifically means "tab-separated values," which is the formatting that the file uses.  Open one and check it out!  It might be self-explanatory...especially if you know how whitespace works.
 
 ---
