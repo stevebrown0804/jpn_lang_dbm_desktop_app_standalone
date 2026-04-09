@@ -42,31 +42,31 @@ Anyhow, the TSV file itself is that aggregate word count, in TSV (tab-seperated 
 
 For a more interesting example, suppose you follow every aidoru that you can find on Instagram.  You spend countless hours copying and pasting the text from each update into the app;  you tag each entry with the member's name, group name, a couple tags for the month and year of the update, and maybe other tags that describe the posts.  You can then ask the DB, "What words do the two shortest ANGERME members say most often in instagram updates in summer?"  (You'd do this by selecting the tags of the two shortest member's names -- which I don't know off the top of my head -- then ANGERME -- although you could skip this tag, if no one else in your DB has the same names as ANGERME mambers -- then june, july and august, or whatever you call those tags.)  Viola, data has become useful information.
 
-Q) Ok, but...why?
+Q) Ok, but...why?  
 A) The world of Japanse self-study is full of lists of "the top words throughout the entire Japanese language," and those lists tend to be full of words I haven't found useful to learn (yet -- maybe someday, but not yet).  On the other hand, if you're, for example, following a bunch of aidoru on Instagram every day, and you study the words that they're using....do you see where I'm going with this?  You're studying words that are more directly relevant to your interests, and to your daily exposure to the Japanese language.
 
-Q) But I already know a bunch of words!  Are you telling me to study them AGAIN?
+Q) But I already know a bunch of words!  Are you telling me to study them AGAIN?  
 A) What?! Why on earth would you study a word you already know?!  But seriously, when you're taking that TSV file (or just the filtered aggregate word list), pick the words that you DON'T know and add them to Anki or something.  And add them in the order of "highest word count, descending."  That gives you the best likelihood of learning words that you'll actually see in those aidoru instagram updates.  Clever, no?
 
-Q) Didn't someone already write this?
+Q) Didn't someone already write this?  
 A) Not that I've seen...but if they did, then I just wasted the past few months of my life!😂  ah, well.
 
-Q) How usable is this thing?
+Q) How usable is this thing?  
 A) Not very, which is why I'm calling it "release 0.0.1+alpha" or some such.  Still, it should (1) run, (2) do what it intends to accomplish (if only barely, at this point), and (3) only occasionally crash, which qualifies as "useful enough to justify making the repo public."
 
-Q) Why Avalonia and not QT-whatever it's called?
+Q) Why Avalonia and not QT-whatever it's called?  
 A) Honestly, before I started this project, I'd never used either.  I had a reason why I chose Avalonia at one point, but I've since forgotten it.  (Was it poor C# support, maybe? I don't recall.🤔  I'm using rust for "backend stuff," Flutter for Android apps...then "whatever language seems appropriate" for desktop apps.  Of that classification of programming languages, I probably have the most experience with C#....so C# + Avalonia it is!  ...I think.)
 
-Q) This app seems hard to use!
+Q) This app seems hard to use!  
 A) Yep.  And I don't plan to dumb it down at all.  I had a very specific audience in mind while I wrote this thing, and it basically included "people that might usefully produce word count lists that others can put to use."  So if you're just here to use word count lists....either deal with the app's complications or wait for someone else to produce the word count lists that you're looking for, I guess.
 
-Q) It's full of UI bugs!
+Q) It's full of UI bugs!  
 A) hahahah, yep.  We'll get them cleaned up "eventually."
 
-Q) What's a TSV file?
+Q) What's a TSV file?  
 A) It's just a text file, so you can open it in Notepad or whatever.  But the "TSV" specifically means "tab-separated values," which is the formatting that the file uses.  Open one and check it out!  It might be self-explanatory...especially if you know how whitespace works.
 
-Q) Do you accept tips?
+Q) Do you accept tips?  
 A) Of course! https://ko-fi.com/stevebrown0804
 
 ---
