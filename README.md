@@ -66,4 +66,7 @@ A) hahahah, yep.  We'll get them cleaned up "eventually."
 Q) What's a TSV file?
 A) It's just a text file, so you can open it in Notepad or whatever.  But the "TSV" specifically means "tab-separated values," which is the formatting that the file uses.  Open one and check it out!  It might be self-explanatory...especially if you know how whitespace works.
 
+Q) Do you accept tips?
+A) Of course! https://ko-fi.com/stevebrown0804
+
 ---
