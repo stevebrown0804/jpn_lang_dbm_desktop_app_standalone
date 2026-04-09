@@ -3,7 +3,7 @@ Overview:
 This app currently does the following:
 1. Lets you paste in Japanese text and returns a "word count" of your input.  (It uses a rust crate called Lindera -- which is itself a wrapper for MeCab, the morphological analyzer for the Japanese language -- to produce that word count.)
 2. Lets you attach key/value pairs (which I'm calling 'source data'), if you so choose.  (ex. "URL", [the URL where the input came from]; "Instagram Username", [the Instagram username of the source of the input], "Timestamp", [a representation of the time the post was made].) *1 *2 *4
-3. Lets the user define and attach tags to an input+source pair. *3
+3. Lets you create and attach tags to an input+source pair. *3
 4. Once you have at least one tagged input in the DB, the app will produce an aggregate word count; from there, you can use the "Search and Export" UI to refine that aggregate word count by tags, then export that refined aggregate word count to TSV file.
 
 *1 Note: You might not want to duplicate the data you store in tags; or, then again, you might want to go totally overboard with the source data.  Your call.  
