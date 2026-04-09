@@ -50,7 +50,7 @@ Anyhow, the TSV file itself is that aggregate word count, in TSV (tab-seperated 
 
 For a more interesting example, suppose you follow every aidoru that you can find on Instagram.  You spend countless hours copying and pasting the text from each update into the app;  you tag each entry with the member's name, group name, a couple tags for the month and year of the update, and maybe other tags that describe the posts.  
 
-You might then ask the DB, "What words do the two shortest ANGERME members say most often in instagram updates in summer?"  (You'd do this by selecting the tags of the two shortest member's names -- which I don't know off the top of my head -- then the angerme tag -- although you could skip this tag, if no one else in your DB has the same names as ANGERME mambers -- then june, july and august, or whatever you call those tags.)  Viola, data has become useful information.
+You might then ask the DB, "What words do the two shortest ANGERME members say most often in instagram updates in summer?"  (You'd do this by selecting the tags of the two shortest member's names -- which I don't know off the top of my head -- then the angerme tag -- although you could skip this tag, if no one else in your DB has the same names as ANGERME members -- then june, july and august, or whatever you call those tags.)  Viola, data has become useful information.
 
 Q) What's up with your tag-naming conversions?  I want capital letters, punctuation and whitespace in my tags!
 A) And as it so happens, ths app allows that!  Heck, if you want to shoot yourself in the foot, the app might just allow that.  Who am I to stop anyone from using an app in (just about *1) any way they choose?
