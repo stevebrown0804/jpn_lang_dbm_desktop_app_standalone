@@ -36,7 +36,7 @@ The program will create the database on first load (and any other load, if you d
 You may need the following fonts (if you're running the WSL version of the app, anyhow) to show kanji:  
 `sudo apt install -y fonts-noto-cjk fonts-noto-cjk-extra`
 
-Speaking of "the database," you can add your own dictionary entries to it.  I forget which table, but if you can open a SQLite file then you can probably figure it out. (And you can probably decipher the column names!  I don't try to make them tricky.)
+Speaking of "the database," you can add your own dictionary entries to it.  I forget which table, but if you can open a SQLite file then you can probably figure it out. (And you can probably decipher the column names!  I don't think I made them particulary tricky...although I should probably check before I make claims like that.)
 
 ---
 
