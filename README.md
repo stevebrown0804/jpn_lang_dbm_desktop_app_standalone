@@ -6,7 +6,7 @@ This app currently does the following:
 3. Lets you create and attach tags to an input+source pair. *3
 4. Once you have at least one tagged input in the DB, the app will produce an aggregate word count; from there, you can use the "Search and Export" UI to refine that aggregate word count by tags, then export that refined aggregate word count to TSV file.
 
-*1 Note: You might not want to duplicate the data you store in tags; or, then again, you might want to go totally overboard with the source data.  Your call.  
+*1 Note: You might not want to duplicate the data you store in tags; or, then again, you might want to be "extensive" with the source data.  Your call.  
 *2 Usage note: If you don't care about source data, you'll still need to attach a blank source data block to your input; don't worry, it's easier than it sounds.  (Just make sure the appropriate input is selected then click the "Attach source data" button with the "Blank" template selected.)  
 *3 And detach them, and delete tags! I tried to make the app "at least SOMEWHAT usable" before making the repo public, after all.  
 *4 There's also template support for the keys of those key/value pairs!  And I'm thinking I might do some sort of "default value" (that is, the value of the key/value pair) that can be assigned to a template, but we'll see.
